@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/messages", messageRoutes);
 
 // DB Connect
 mongoose.connect(process.env.MONGO_URI)
