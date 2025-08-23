@@ -9,7 +9,7 @@ function setupSocket(io) {
 
     if (!token && socket.handshake.headers.cookie) {
       const cookies = cookie.parse(socket.handshake.headers.cookie);
-      token = cookies.token || cookies.jwt || null;
+      token = cookies.token || null;
     }
 
     if (!token) return next(new Error("No token"));

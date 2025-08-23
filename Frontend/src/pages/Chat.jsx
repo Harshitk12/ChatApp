@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import UserList from "../components/UserList";
@@ -17,12 +17,18 @@ export default function Chat() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState({});
 
-  const normalize = (m) => ({
-    sender: m.sender || m.from,
-    receiver: m.receiver || m.to,
-    content: m.content || m.message || m.text,
-    createdAt: m.createdAt || m.timestamp || m.time || new Date().toISOString(),
+  const endRef = useRef(null); // for scrolling
+
+  const fetchedMessage = (m) => ({
+    sender: m.sender,
+    receiver: m.receiver,
+    content: m.content,
+    createdAt: m.createdAt,
   });
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" }); //for scrolling
+  }, [messages]);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/auth/me", { credentials: "include" })
@@ -61,7 +67,7 @@ export default function Chat() {
     })
       .then((res) => res.json())
       .then((data) => {
-        const normalized = data.map(normalize);
+        const normalized = data.map(fetchedMessage);
         setMessages((prev) => ({ ...prev, [receiverId]: normalized }));
       })
       .catch((err) => console.error("history fetch error:", err));
@@ -69,12 +75,12 @@ export default function Chat() {
 
   useEffect(() => {
     const handler = (data) => {
-      const incoming = normalize({
-        from: data.from,
-        to: user?._id,
+      const incoming = {
+        sender: data.from,
+        receiver: user?._id,
         content: data.content,
-        timestamp: data.timestamp,
-      });
+        createdAt: data.timestamp,
+      };
 
       const otherUserId = data.from;
 
@@ -161,6 +167,7 @@ export default function Chat() {
                   {msg.content}
                 </div>
               ))}
+              <div ref={endRef} />
             </div>
 
             <form onSubmit={sendMessage} className="p-2 flex gap-2 bg-white shadow">

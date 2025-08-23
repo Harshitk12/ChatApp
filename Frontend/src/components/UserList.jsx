@@ -16,7 +16,6 @@ export default function UserList({ users, onSelectUser, selectedUserId }) {
             </div>
             <div>
               <p className="font-medium text-gray-800">{user.username}</p>
-              <p className="text-sm text-gray-500">{user.email}</p>
             </div>
           </li>
         ))}
