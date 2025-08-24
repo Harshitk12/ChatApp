@@ -40,10 +40,10 @@ export default function Chat() {
         setUser(data);
         if (data.token) socket.auth.token = data.token;
 
-        socket.on("connect_error", (err) => 
+        socket.on("connect_error", (err) =>
           console.error("socket connect_error:", err.message)
         );
-        socket.on("connect", () => 
+        socket.on("connect", () =>
           console.log("socket connected", socket.id)
         );
 
@@ -132,53 +132,75 @@ export default function Chat() {
     return <div>Loading...</div>;
   }
 
+  const receiver = users.find((u) => u._id === receiverId);
+
+
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gradient-to-r from-indigo-50 via-white to-purple-50">
       <UserList
         users={users.filter((u) => u._id !== user?._id)}
         onSelectUser={(id) => setReceiverId(id)}
         selectedUserId={receiverId}
       />
 
-      <div className="flex flex-col bg-gray-100 flex-1">
-        <div className="bg-blue-600 text-white p-4 font-bold">
-          Welcome, {user?.username}
-        </div>
+      <div className="flex flex-col flex-1">
 
+        {/* Empty state */}
         {!receiverId ? (
-          <div className="flex-1 grid place-items-center text-gray-500">
-            Select a user to start chatting
+          <div className="flex-1 grid place-items-center text-gray-500 text-lg">
+            👋 Select a user to start chatting
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {/* Header */}
+            <div className="flex items-center gap-3 
+     bg-gradient-to-r from-sky-500/50 via-cyan-500/50 to-teal-500/50
+     backdrop-blur-lg text-white p-2 px-4 font-semibold shadow-md 
+     sticky top-0 z-10">
+
+              <div className="w-12 h-12 rounded-full 
+       bg-gradient-to-r from-indigo-500 to-purple-500 
+       text-white flex items-center justify-center font-semibold shadow">
+                {receiver.name.charAt(0).toUpperCase()}
+              </div>
+
+              {receiver.name}
+            </div>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
               {(messages[receiverId] || []).map((msg, index) => (
                 <div
                   key={index}
-                  className={`p-2 rounded max-w-sm ${
-                    msg.sender === user?._id
-                      ? "bg-blue-500 text-white self-end ml-auto"
-                      : "bg-gray-200 text-black"
-                  }`}
+                  className={`p-3 rounded-2xl max-w-xs sm:max-w-md shadow-md ${msg.sender === user?._id
+                    ? "bg-gradient-to-r from-sky-400 to-cyan-400 text-white ml-auto"
+                    : "bg-white text-gray-800 border border-gray-200"
+                    }`}
                 >
                   <div className="text-xs opacity-70 mb-1">
                     {msg.sender === user?._id ? "You" : getUsername(msg.sender)}
                   </div>
-                  {msg.content}
+                  <p className="break-words">{msg.content}</p>
                 </div>
               ))}
               <div ref={endRef} />
             </div>
 
-            <form onSubmit={sendMessage} className="p-2 flex gap-2 bg-white shadow">
+            {/* Input */}
+            <form
+              onSubmit={sendMessage}
+              className="p-3 flex gap-3 shadow-lg"
+            >
               <input
                 type="text"
                 placeholder={`Message ${getUsername(receiverId)}...`}
-                className="flex-1 border p-2 rounded"
+                className="flex-1 bg-sky-50 border border-gray-300 p-3 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
-              <button type="submit" className="bg-blue-600 text-white px-4 rounded">
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-sky-500 via-cyan-500 to-teal-500 text-white px-6 py-2 rounded-full font-medium shadow hover:opacity-90 transition"
+              >
                 Send
               </button>
             </form>
@@ -186,5 +208,7 @@ export default function Chat() {
         )}
       </div>
     </div>
+
+
   );
 }

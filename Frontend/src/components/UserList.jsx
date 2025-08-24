@@ -1,19 +1,33 @@
 export default function UserList({ users, onSelectUser, selectedUserId }) {
   return (
-    <div className="bg-white w-64 border-r overflow-y-auto">
-      <h2 className="text-lg font-bold mb-4 text-center text-gray-700">Users</h2>
-      <ul className="divide-y divide-gray-200">
+    <div className="bg-white w-72 border-r shadow-lg overflow-y-auto bg-gradient-to-r from-indigo-50 to-purple-50">
+      {/* Search Bar */}
+      <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 sticky top-0 z-10">
+        <input
+          type="text"
+          placeholder="Search users..."
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
+      {/* Users List */}
+      <ul className="space-y-1 px-2 ">
         {users.map((user) => (
           <li
             key={user._id}
             onClick={() => onSelectUser(user._id)}
-            className={`flex items-center gap-4 p-3 cursor-pointer hover:bg-gray-100 transition ${
-              selectedUserId === user._id ? "bg-blue-100" : ""
-            }`}
+            className={`flex items-center gap-4 p-3 cursor-pointer rounded-lg transition ${selectedUserId === user._id
+              ? "bg-gradient-to-r from-indigo-100 to-purple-100 shadow-md"
+              : "hover:bg-gray-100"
+              }`}
           >
-            <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-              {user.username.charAt(0).toUpperCase()}
+            {/* Avatar */}
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white flex items-center justify-center font-semibold shadow">
+                {user.username.charAt(0).toUpperCase()}
+              </div>
             </div>
+
+            {/* Username */}
             <div>
               <p className="font-medium text-gray-800">{user.username}</p>
             </div>
@@ -21,5 +35,6 @@ export default function UserList({ users, onSelectUser, selectedUserId }) {
         ))}
       </ul>
     </div>
+
   );
 }
