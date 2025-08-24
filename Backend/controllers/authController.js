@@ -3,19 +3,19 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const signup = async (req, res) => {
-  const { username, password } = req.body;
+  const { name, username, password } = req.body;
   try {
     const existingUser = await User.findOne({ username });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, password: hashedPassword });
+    const newUser = await User.create({ name, username, password: hashedPassword });
 
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "Lax"
-    }).json({ message: "User created", user: { id: newUser._id, username: newUser.username } });
+    }).json({ message: "User created", user: { id: newUser._id, name: newUser.name, username: newUser.username } });
   } catch (err) {
     res.status(500).json({ message: "Signup error", error: err.message });
   }
@@ -34,7 +34,7 @@ const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "Lax"
-    }).json({ message: "Login successful", user: { id: user._id, username: user.username } });
+    }).json({ message: "Login successful", user: { id: user._id, name: user.name, username: user.username } });
   } catch (err) {
     res.status(500).json({ message: "Login error", error: err.message });
   }
