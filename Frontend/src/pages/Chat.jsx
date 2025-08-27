@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import UserList from "../components/UserList";
+import useIsDesktop from "../services/useIsDesktop";
 
 const socket = io("http://localhost:5000", {
   withCredentials: true,
@@ -20,6 +21,8 @@ export default function Chat() {
   const isResizing = useRef(false);
 
   const endRef = useRef(null); // for scrolling
+
+  const isDesktop = useIsDesktop(); // md breakpoint (768px) by default
 
   const fetchedMessage = (m) => ({
     sender: m.sender,
@@ -96,17 +99,6 @@ export default function Chat() {
     return () => socket.off("receiveMessage", handler);
   }, [user?._id]);
 
-  useEffect(() => {
-    if (isResizing) {
-      document.body.style.userSelect = "none";
-    } else {
-      document.body.style.userSelect = "auto";
-    }
-    return () => {
-      document.body.style.userSelect = "auto"; // cleanup
-    };
-  }, [isResizing]);
-
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !receiverId || !user?._id) return;
@@ -171,20 +163,25 @@ export default function Chat() {
   return (
     <div className="flex h-screen bg-gradient-to-r from-indigo-50 via-white to-purple-50" onMouseUp={stopResize} onMouseMove={resize} >
 
-      <div style={{ width: sidebarWidth }} className="relative border-r border-gray-200">
+      <div style={{ width: isDesktop ? sidebarWidth : "100%" }}
+        className={`${receiverId ? "hidden md:block" : "block"} relative border-r border-gray-200`} // hide on mobile when chat is open
+      >
         <UserList
           users={users.filter((u) => u._id !== user?._id)}
           onSelectUser={(id) => setReceiverId(id)}
           selectedUserId={receiverId}
-          style={{ width: sidebarWidth }}
+          style={{ width: isDesktop ? sidebarWidth : "100%" }}
         />
         <div
           onMouseDown={startResize}
-          className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-gray-300 hover:bg-gray-400 transition z-[2]"
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-gray-300 hover:bg-gray-400 transition z-[2] hidden md:block"
         />
       </div>
 
-      <div className="flex flex-col flex-1">
+      {/* Chatbox */}
+      <div className={`flex flex-col flex-1 
+      ${!receiverId ? "hidden md:flex" : "flex"} `}
+      >
 
         {/* Empty state */}
         {!receiverId ? (
@@ -199,6 +196,14 @@ export default function Chat() {
      backdrop-blur-lg text-white p-2 px-4 font-semibold shadow-md 
      sticky top-0 z-10">
 
+              {/* Back button for mobile */}
+              <button
+                onClick={() => setReceiverId(null)}
+                className="md:hidden p-2 text-white cursor-pointer"
+              >
+                ←
+              </button>
+
               <div className="w-12 h-12 rounded-full 
        bg-gradient-to-r from-indigo-500 to-purple-500 
        text-white flex items-center justify-center font-semibold shadow">
@@ -212,7 +217,7 @@ export default function Chat() {
               {(messages[receiverId] || []).map((msg, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-2xl max-w-xs sm:max-w-md shadow-md ${msg.sender === user?._id
+                  className={`p-3 rounded-2xl min-w-[35%] w-fit max-w-[60%] shadow-md ${msg.sender === user?._id
                     ? "bg-gradient-to-r from-sky-400 to-cyan-400 text-white ml-auto"
                     : "bg-white text-gray-800 border border-gray-200"
                     }`}

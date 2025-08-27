@@ -2,7 +2,7 @@ export default function UserList({ users, onSelectUser, selectedUserId, style })
   return (
     <div
       style={style} // width comes from parent
-      className="bg-white shadow-lg overflow-y-auto bg-gradient-to-r from-indigo-50 to-purple-50 relative"
+      className={`bg-white shadow-lg overflow-y-auto bg-gradient-to-r from-indigo-50 to-purple-50 relative w-1`}
     >
       {/* Search Bar */}
       <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 sticky top-0 z-1">
