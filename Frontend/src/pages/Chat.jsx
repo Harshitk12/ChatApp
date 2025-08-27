@@ -16,6 +16,8 @@ export default function Chat() {
   const [receiverId, setReceiverId] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState({});
+  const [sidebarWidth, setSidebarWidth] = useState(300); // default sidebar width
+  const isResizing = useRef(false);
 
   const endRef = useRef(null); // for scrolling
 
@@ -94,6 +96,17 @@ export default function Chat() {
     return () => socket.off("receiveMessage", handler);
   }, [user?._id]);
 
+  useEffect(() => {
+    if (isResizing) {
+      document.body.style.userSelect = "none";
+    } else {
+      document.body.style.userSelect = "auto";
+    }
+    return () => {
+      document.body.style.userSelect = "auto"; // cleanup
+    };
+  }, [isResizing]);
+
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !receiverId || !user?._id) return;
@@ -134,14 +147,42 @@ export default function Chat() {
 
   const receiver = users.find((u) => u._id === receiverId);
 
+  const startResize = () => {
+    isResizing.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
+
+  const stopResize = () => {
+    isResizing.current = false;
+    document.body.style.cursor = "default";
+    document.body.style.userSelect = "auto";
+  };
+
+  const resize = (e) => {
+    if (isResizing.current) {
+      setSidebarWidth(Math.min(Math.max(e.clientX, 200), 600));
+      // min 200px, max 600px
+    }
+  };
+
+
 
   return (
-    <div className="flex h-screen bg-gradient-to-r from-indigo-50 via-white to-purple-50">
-      <UserList
-        users={users.filter((u) => u._id !== user?._id)}
-        onSelectUser={(id) => setReceiverId(id)}
-        selectedUserId={receiverId}
-      />
+    <div className="flex h-screen bg-gradient-to-r from-indigo-50 via-white to-purple-50" onMouseUp={stopResize} onMouseMove={resize} >
+
+      <div style={{ width: sidebarWidth }} className="relative border-r border-gray-200">
+        <UserList
+          users={users.filter((u) => u._id !== user?._id)}
+          onSelectUser={(id) => setReceiverId(id)}
+          selectedUserId={receiverId}
+          style={{ width: sidebarWidth }}
+        />
+        <div
+          onMouseDown={startResize}
+          className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-gray-300 hover:bg-gray-400 transition z-[2]"
+        />
+      </div>
 
       <div className="flex flex-col flex-1">
 
